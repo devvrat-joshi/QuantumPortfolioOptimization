@@ -82,7 +82,7 @@ class QuantumPortfolioOptimization:
                 for j in range(self.noStocks):
                     volatility += self.Cov.iloc[i,j]*weights[i]*weights[j]
 
-            print("Weights: ",weights)
+            print("Weights: ",weights.tolist())
             print("Expected Return: ",self.ER)
             print("Actual Return: ",actual_return/s)
             print("Volatility: ",np.sqrt(volatility))
