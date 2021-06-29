@@ -5,24 +5,40 @@ from collections import defaultdict
 from dwave.system import DWaveSampler, EmbeddingComposite
 
 class QuantumPortfolioOptimization:
-    def __init__(self,numberOfStocks,expectedReturns,precision,lagrange=[1,1,1],numReads=10,chainStrength=1):
+    def __init__(self,numberOfStocks,expectedReturns,precision,lagrange=[1,1,1],numReads=10,\
+                chainStrength=1,reCalcCov=False,startDate='2013-01-01',endDate='2018-01-01'):
         self.lagrange = lagrange
         self.noStocks = numberOfStocks
         self.ER = expectedReturns
         self.numReads = numReads
         self.chainStrength = chainStrength
+        self.Again = reCalcCov
+        self.startDate = startDate
+        self.endDate = endDate
         self.getData()
         self.getQubo(precision)
         self.dWaveExecute()
         self.Results(precision)
 
     def getData(self):
-        Cov = pd.read_csv("data/covariance.csv",header=0)
-        Index = Cov["Unnamed: 0"]
-        Cov = Cov.drop(["Unnamed: 0"],axis=1)
-        Cov = Cov.set_index(Index)
-        self.Cov = Cov
-        self.Means = pd.read_csv("data/meanReturns.csv",header=0).to_numpy()[:,1].tolist()
+        if self.Again==False:
+            Cov = pd.read_csv("data/covariance.csv",header=0)
+            Index = Cov["Unnamed: 0"]
+            Cov = Cov.drop(["Unnamed: 0"],axis=1)
+            Cov = Cov.set_index(Index)
+            self.Cov = Cov
+            self.Means = pd.read_csv("data/meanReturns.csv",header=0).to_numpy()[:,1].tolist()
+        else:
+            self.reCalc()
+
+    def reCalc(self):
+        data = pd.read_csv("data/dailyClosingPrices.csv",header=0)
+        Index = data["Date"]
+        data = data.drop(["Date"],axis=1)
+        data = data.set_index(Index)[self.startDate:self.endDate]
+        returns = data.pct_change()
+        self.Cov = returns.cov()*252
+        self.Means = returns.mean(axis=0)*252
     
     def getQubo(self,prc):
         Qubo = defaultdict(int)
@@ -77,6 +93,9 @@ class QuantumPortfolioOptimization:
             s = sum(weights)
             weights = np.array(weights)/s
 
+            if rank==1:
+                self.weights = weights
+                
             volatility = 0
             for i in range(self.noStocks):
                 for j in range(self.noStocks):
