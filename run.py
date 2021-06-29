@@ -7,5 +7,6 @@ QuantumPortfolioOptimization(
     lagrange = [5,3,1],
     reCalcCov = True,
     startDate = '2013-01-01',
-    endDate = '2018-01-01'
+    endDate = '2018-01-01',
+    backTest = True,
 )

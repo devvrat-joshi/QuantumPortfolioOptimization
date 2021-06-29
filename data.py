@@ -22,5 +22,5 @@ import numpy as np
 Cov = pd.read_csv("data/dailyClosingPrices.csv",header=0)
 Index = Cov["Date"]
 Cov = Cov.drop(["Date"],axis=1)
-Cov = Cov.set_index(Index)['2013-01-01':'2018-01-01']
+Cov = Cov.set_index(Index)[:'2018-01-01'].iloc[-1:]
 print(Cov)
