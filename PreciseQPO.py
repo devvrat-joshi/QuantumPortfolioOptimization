@@ -27,6 +27,7 @@ class QuantumPortfolioOptimization:
             self.getQubo(prc)
             self.dWaveExecute()
             self.Results(prc)
+            self.getValuesObjective()
         else:
             self.doBackTest(prc)
 
@@ -98,14 +99,21 @@ class QuantumPortfolioOptimization:
 
     def doBackTest(self,prc):
         months = ['-01-01','-02-01','-03-01','-04-01','-05-01','-06-01',\
-                '-07-01','-08-01','-09-01','-10-01','-11-01','-12-01',]
+                '-07-01','-08-01','-09-01','-10-01','-11-01','-12-01']
         self.normal = np.array([1/self.noStocks]*self.noStocks)
         self.normalAmount = self.amount
         self.getData()
         self.executeTest(prc)
+        # prevDate = '2017-10-01'
         for year in range(self.period[0],self.period[1]):
-            for month in months:
+            for ind,month in enumerate(months):
+                if ind>2:
+                    self.startDate = str(year)+months[ind-3]
+                else:
+                    self.startDate = str(year-1)+months[ind-3]
                 self.endDate = str(year)+month
+                print(self.startDate,self.endDate)
+                prevDate = self.endDate
                 self.amount = self.leftOut
                 self.normalAmount = self.normalLeftOut
                 self.getData()
@@ -130,6 +138,15 @@ class QuantumPortfolioOptimization:
             self.leftOut += self.shares[i]%self.prices.iloc[0,i]
             self.shares[i] //= self.prices.iloc[0,i]
 
+    def getValuesObjective(self):
+        objective = 0
+        for i in range(self.noStocks):
+            for j in range(self.noStocks):
+                objective += self.Cov.iloc[i,j]*self.weights[i]*self.weights[j]
+        print("Objective: ",objective)
+        print("Returns: ",(self.actualReturns-self.ER)**2)
+        print("Weights: ",(self.sumWeights-1)**2)
+
     def Results(self,prc):
         rank = 0
         for best, energy in self.response.data(['sample', 'energy']):
@@ -143,6 +160,7 @@ class QuantumPortfolioOptimization:
                 weights[i//prc] += best[i]/pow(2,i%prc+1)
 
             s = sum(weights)
+            self.sumWeights = sum(weights)
             weights = np.array(weights)/s
 
             volatility = 0
@@ -152,6 +170,7 @@ class QuantumPortfolioOptimization:
 
             if rank==1:
                 self.weights = weights
+                self.actualReturns = actual_return
                 print("Weights: ",weights.tolist())
                 print("Expected Return: ",self.ER)
                 print("Actual Return: ",actual_return/s)
