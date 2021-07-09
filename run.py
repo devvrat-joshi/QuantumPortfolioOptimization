@@ -1,13 +1,17 @@
 from PreciseQPO import QuantumPortfolioOptimization
 
 QuantumPortfolioOptimization(
-    numberOfStocks = 5,
-    expectedReturns = 0.3,
+    numberOfStocks = 10,
+    expectedReturns = 0.25,
     precision = 4,
-    lagrange = [10,1,0.2],
+    lagrange = [3,1,0.2],
     reCalcCov = False,
     startDate = '2013-01-01',
-    endDate = '2018-01-01',
+    endDate = '2019-01-01',
+    numReads = 10,
+    chainStrength = 1,
     backTest = True,
-    periodOriginal = [2018,2021]
+    periodOriginal = [2019,2020],
+    rebalance = "monthly"
 )
+
