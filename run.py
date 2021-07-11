@@ -11,6 +11,7 @@ QuantumPortfolioOptimization(
     numReads = 10,
     chainStrength = 1,
     backTest = True,
+    amount = 1000000,
     periodOriginal = [2019,2020],
     rebalance = "monthly"
 )

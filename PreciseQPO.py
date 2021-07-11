@@ -108,7 +108,6 @@ class QuantumPortfolioOptimization:
         self.normalAmount = self.amount
         self.getData()
         self.executeTest(prc)
-        # prevDate = '2017-10-01'
         for year in range(self.period[0],self.period[1]):
             for ind,month in enumerate(months):
                 for day in range(1,days[month]+1):
@@ -117,8 +116,6 @@ class QuantumPortfolioOptimization:
                     self.normalAmount = self.normalLeftOut
                     self.classicalAmount = self.classicalLeftOut
                     self.getData()
-                    # print(self.classicalLeftOut,"leftout")
-                    # print(self.classicalShares)
                     for i in range(self.noStocks):
                         self.classicalAmount += self.classicalShares[i]*self.prices.iloc[0,i]
                         self.amount += self.shares[i]*self.prices.iloc[0,i]
@@ -135,6 +132,9 @@ class QuantumPortfolioOptimization:
             
 
     def getClassicalWeights(self):
+        """
+            Run classical portfolio optimisation on the data to compare with quantum results.
+        """
         matrix = self.Cov.iloc[:self.noStocks,:].iloc[:,:self.noStocks].to_numpy().tolist()
         matrix.append(self.Means.copy()[:self.noStocks]+[0])
         matrix.append([1]*len(self.Cov[:self.noStocks])+[0])
@@ -145,10 +145,9 @@ class QuantumPortfolioOptimization:
         matrix[-2].append(0.0000)
         matrix = np.array(matrix)
         B = np.array([0 for i in range(len(self.Cov[:self.noStocks]))] + [0.3, 1])
-        temp = np.dot(matrix,B)
+        temp = np.dot(np.linalg.pinv(matrix),B)
         self.classicalWeights = np.array(temp[:-2])/sum(temp[:-2])
-        
-        
+        # Assuming we can always sell as many stocks as per the portfolio
 
     def executeTest(self,prc):
         self.getQubo(prc)
